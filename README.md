@@ -1,8 +1,8 @@
-# Bigio Internship Test
+# BIGIO Internship Test
 
 ## Introduction :
 
-A mobile application developed in Kotlin using Jetpack Compose as part of the Bigio internship test. The app demonstrates API integration, Room database caching, and navigation within a clean and modern Android architecture.
+A mobile application developed in Kotlin using Jetpack Compose as part of the BIGIO internship test. The app demonstrates API integration, Room database caching, and navigation within a clean and modern Android architecture.
 
 ## Table of Contents
 
