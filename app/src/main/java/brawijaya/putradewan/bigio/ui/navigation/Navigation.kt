@@ -7,7 +7,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import brawijaya.putradewan.bigio.ui.screens.detail.DetailScreen
+import brawijaya.putradewan.bigio.ui.screens.favorites.FavoriteScreen
 import brawijaya.putradewan.bigio.ui.screens.home.HomeScreen
+import brawijaya.putradewan.bigio.ui.screens.search.SearchScreen
 
 sealed class Screen(val route: String) {
     object Home: Screen("home")
@@ -40,6 +42,12 @@ fun AppNavigation(navController: NavHostController) {
                 navController = navController,
                 characterId = characterId
             )
+        }
+        composable(Screen.Favorites.route) {
+            FavoriteScreen(navController = navController)
+        }
+        composable(Screen.Search.route) {
+            SearchScreen(navController = navController)
         }
     }
 }
