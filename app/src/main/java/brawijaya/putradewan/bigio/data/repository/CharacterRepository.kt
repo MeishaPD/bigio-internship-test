@@ -10,7 +10,14 @@ import kotlinx.coroutines.flow.Flow
 interface CharacterRepository {
     suspend fun getCharacters(page: Int): Result<ApiResponse<Character>>
     suspend fun getCharacter(id: Int): Result<Character>
-    suspend fun searchCharacters(query: String, page: Int = 1): Result<ApiResponse<Character>>
+    suspend fun searchCharacters(
+        name: String? = null,
+        status: String? = null,
+        species: String? = null,
+        type: String? = null,
+        gender: String? = null,
+        page: Int = 1
+    ): Result<ApiResponse<Character>>
     fun getAllFavorites(): Flow<List<FavoriteCharacter>>
     suspend fun addToFavorites(character: Character)
     suspend fun removeFromFavorites(characterId: Int)
@@ -40,9 +47,23 @@ class CharacterRepositoryImpl(
         }
     }
 
-    override suspend fun searchCharacters(query: String, page: Int): Result<ApiResponse<Character>> {
+    override suspend fun searchCharacters(
+        name: String?,
+        status: String?,
+        species: String?,
+        type: String?,
+        gender: String?,
+        page: Int
+    ): Result<ApiResponse<Character>> {
         return try {
-            val response = apiService.searchCharacters(query, page)
+            val response = apiService.searchCharacters(
+                name = name,
+                status = status,
+                species = species,
+                type = type,
+                gender = gender,
+                page = page
+            )
             Result.success(response)
         } catch (e: Exception) {
             Result.failure(e)

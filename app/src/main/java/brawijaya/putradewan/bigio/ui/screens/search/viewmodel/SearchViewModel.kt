@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import brawijaya.putradewan.bigio.data.models.Character
 import brawijaya.putradewan.bigio.data.repository.CharacterRepository
 import brawijaya.putradewan.bigio.ui.UiState
+import brawijaya.putradewan.bigio.ui.screens.search.components.SearchFilters
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,32 +22,54 @@ class SearchViewModel(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
+    private val _searchFilters = MutableStateFlow(SearchFilters())
+    val searchFilters: StateFlow<SearchFilters> = _searchFilters.asStateFlow()
+
     private val _searchResults = mutableListOf<Character>()
     private var currentPage = 1
     private var hasNextPage = true
 
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
-        if (query.isBlank()) {
+        performSearch()
+    }
+
+    fun updateSearchFilters(filters: SearchFilters) {
+        _searchFilters.value = filters
+        performSearch()
+    }
+
+    private fun performSearch() {
+        val query = _searchQuery.value
+        val filters = _searchFilters.value
+
+        if (query.isBlank() && !filters.hasActiveFilters()) {
             _uiState.value = UiState.Success(emptyList())
             return
         }
 
         viewModelScope.launch {
             delay(500)
-            if (_searchQuery.value == query) {
-                searchCharacters(query)
+            if (_searchQuery.value == query && _searchFilters.value == filters) {
+                searchCharacters()
             }
         }
     }
 
-    private fun searchCharacters(query: String) {
+    private fun searchCharacters() {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
             currentPage = 1
             hasNextPage = true
 
-            repository.searchCharacters(query, currentPage).fold(
+            repository.searchCharacters(
+                name = _searchQuery.value.takeIf { it.isNotBlank() },
+                status = _searchFilters.value.status,
+                species = _searchFilters.value.species,
+                type = _searchFilters.value.type,
+                gender = _searchFilters.value.gender,
+                page = currentPage
+            ).fold(
                 onSuccess = { response ->
                     _searchResults.clear()
                     _searchResults.addAll(response.results)
@@ -61,11 +84,18 @@ class SearchViewModel(
     }
 
     fun loadMoreSearchResults() {
-        if (!hasNextPage || _searchQuery.value.isBlank()) return
+        if (!hasNextPage || (_searchQuery.value.isBlank() && !_searchFilters.value.hasActiveFilters())) return
 
         viewModelScope.launch {
             currentPage++
-            repository.searchCharacters(_searchQuery.value, currentPage).fold(
+            repository.searchCharacters(
+                name = _searchQuery.value.takeIf { it.isNotBlank() },
+                status = _searchFilters.value.status,
+                species = _searchFilters.value.species,
+                type = _searchFilters.value.type,
+                gender = _searchFilters.value.gender,
+                page = currentPage
+            ).fold(
                 onSuccess = { response ->
                     _searchResults.addAll(response.results)
                     hasNextPage = response.info.next != null
@@ -76,5 +106,9 @@ class SearchViewModel(
                 }
             )
         }
+    }
+
+    fun retrySearch() {
+        searchCharacters()
     }
 }

@@ -19,7 +19,11 @@ interface ApiService {
 
     @GET("character")
     suspend fun searchCharacters(
-        @Query("name") name: String,
+        @Query("name") name: String? = null,
+        @Query("status") status: String? = null,
+        @Query("species") species: String? = null,
+        @Query("type") type: String? = null,
+        @Query("gender") gender: String? = null,
         @Query("page") page: Int = 1
     ): ApiResponse<Character>
 }
